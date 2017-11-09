@@ -1,5 +1,5 @@
 import {Model} from "../../model"
-import {empty} from "core/dom"
+import {empty, margin} from "core/dom"
 import * as p from "core/properties"
 import {LayoutCanvas} from "core/layout/layout_canvas"
 import {Solver, GE, EQ, Strength, Variable} from "core/layout/solver"
@@ -54,13 +54,26 @@ export class LayoutDOMView extends DOMView
 
     while true
       measuring = measuring.parentNode
+
+      # this element is detached from DOM
       if not measuring?
-        logger.warn("detached element")
         width = height = null
         break
 
+      # .bk-root element doesn't bring any value
+      if measuring.classList.contains("bk-root")
+        continue
+
+      # we reached <body> element, so use viewport size
+      if measuring == document.body
+        {left, right, top, bottom} = margin(document.body)
+        width  = document.documentElement.clientWidth  - left - right
+        height = document.documentElement.clientHeight - top  - bottom
+        break
+
+      # stop on first element with sensible dimensions
       {width, height} = measuring.getBoundingClientRect()
-      if height != 0
+      if width != 0 and height != 0
         break
 
     return [width, height]
