@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 #-----------------------------------------------------------------------------
 
 # Standard library imports
+from dataclasses import asdict, is_dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -33,6 +34,7 @@ import numpy as np
 from ..core.has_props import abstract
 from ..core.property.any import Any as AnyVal, AnyRef
 from ..core.property.container import ColumnData, Dict, Seq
+from ..core.property.data_class import Dataclass
 from ..core.property.data_frame import EagerDataFrame, PandasGroupBy
 from ..core.property.enum import Enum
 from ..core.property.instance import Instance, InstanceDefault
@@ -204,13 +206,15 @@ class ColumnDataSource(ColumnarDataSource):
     Mapping of column names to sequences of data. The columns can be, e.g,
     Python lists or tuples, NumPy arrays, etc.
 
-    The .data attribute can also be set from Pandas DataFrames or GroupBy
-    objects. In these cases, the behaviour is identical to passing the objects
-    to the ``ColumnDataSource`` initializer.
+    The .data attribute can also be set from dataclass, Pandas DataFrames, or
+    GroupBy objects. In these cases, the behaviour is identical to passing the
+    objects to the ``ColumnDataSource`` initializer.
     """).accepts(
         EagerDataFrame, lambda x: ColumnDataSource._data_from_df(x),
      ).accepts(
         PandasGroupBy, lambda x: ColumnDataSource._data_from_groupby(x),
+     ).accepts(
+        Dataclass, lambda x: ColumnDataSource(asdict(x)),
     ).asserts(lambda _, data: len({len(x) for x in data.values()}) <= 1, _cds_lengths_warning)
 
     @overload
@@ -219,7 +223,7 @@ class ColumnDataSource(ColumnarDataSource):
     def __init__(self, **kwargs: Any) -> None: ...
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ''' If called with a single argument that is a dict or
+        ''' If called with a single argument that is a dict, dataclass, or
         ``pandas.DataFrame``, treat that implicitly as the "data" attribute.
 
         '''
@@ -237,8 +241,10 @@ class ColumnDataSource(ColumnarDataSource):
                 raw_data = self._data_from_df(raw_data)
             elif isinstance(raw_data, pd.core.groupby.GroupBy):
                 raw_data = self._data_from_groupby(raw_data)
+            elif is_dataclass(raw_data):
+                raw_data = asdict(raw_data)
             else:
-                raise ValueError(f"expected a dict or eager dataframe support by Narwhals, got {raw_data}")
+                raise ValueError(f"expected a dict, dataclass, or eager dataframe support by Narwhals, got {raw_data}")
         super().__init__(**kwargs)
         self.data.update(raw_data)
 
