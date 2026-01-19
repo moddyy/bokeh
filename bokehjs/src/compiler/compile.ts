@@ -1,14 +1,15 @@
-import {join, basename, dirname} from "path"
+import {join, basename, dirname} from "node:path"
+
 import ts from "typescript"
 import lesscss from "less"
 
-import type {TSOutput, Inputs, Outputs} from "./compiler"
-import {compiler_host, parse_tsconfig, default_transformers, compile_files, report_diagnostics} from "./compiler"
-import type {Path} from "./sys"
-import {rename} from "./sys"
-import * as transforms from "./transforms"
+import type {TSOutput, Inputs, Outputs} from "./compiler.js"
+import {compiler_host, parse_tsconfig, default_transformers, compile_files, report_diagnostics} from "./compiler.js"
+import type {Path} from "./sys.js"
+import {rename} from "./sys.js"
+import * as transforms from "./transforms.js"
 
-import * as tsconfig_json from "./tsconfig.ext.json"
+import tsconfig_json from "./tsconfig.ext.json" with {type: "json"}
 
 function parse_patched_tsconfig(base_dir: string, preconfigure: ts.CompilerOptions) {
   // XXX: silence the config validator. We are providing inputs through `inputs` argument anyway.

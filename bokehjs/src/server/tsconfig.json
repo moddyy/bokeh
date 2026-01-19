@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["es2022"],
+    "lib": ["es2022", "dom", "dom.iterable"],
     "baseUrl": ".",
     "outDir": "../../build/server",
     "paths": {
@@ -9,5 +8,6 @@
     }
   },
   "extends": "../../tsconfig.base",
-  "include": ["./**/*.ts"]
+  "include": ["./**/*.ts"],
+  "exclude": ["./_build"]
 }
