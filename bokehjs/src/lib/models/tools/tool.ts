@@ -247,6 +247,19 @@ export abstract class Tool extends Model {
     return [sxlim, sylim]
   }
 
+  _compute_overlay_limits(sxlim: [number, number], sylim: [number, number],
+      dims: Dimensions, line_width: number): [[number, number], [number, number]] {
+    if (dims == "width") {
+      sylim[0] -= line_width // top
+      sylim[1] += line_width // bottom
+    } else if (dims == "height") {
+      sxlim[0] -= line_width // left
+      sxlim[1] += line_width // right
+    }
+
+    return [sxlim, sylim]
+  }
+
   // utility function to return a tool name, modified
   // by the active dimensions. Used by tools that have dimensions
   protected _get_dim_tooltip(dims: Dimensions | "auto"): string {
